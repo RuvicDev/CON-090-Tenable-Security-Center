@@ -1,0 +1,88 @@
+{
+  "id": "tenable_sc",
+  "name": "Tenable Security Center",
+  "name_en": "Tenable Security Center",
+  "version": "1.0.0",
+  "description": "Gestión de vulnerabilidades con Tenable Security Center: listar vulnerabilidades, consultar activos y hallazgos, listar y lanzar escaneos",
+  "description_en": "Vulnerability management with Tenable Security Center: list vulnerabilities, query assets and findings, list and launch scans",
+  "icon": "icon.svg",
+  "category": "security",
+  "category_en": "security",
+  "keywords": [
+    "tenable",
+    "security center",
+    "tenable.sc",
+    "nessus",
+    "vulnerabilidades",
+    "vulnerabilities",
+    "escaneo",
+    "scan",
+    "activos",
+    "ciberseguridad"
+  ],
+  "library": {
+    "package": "ruvic-tenable-sc-connector",
+    "install": "pip install git+https://github.com/RuvicDev/CON-090-Tenable-Security-Center.git#subdirectory=lib",
+    "import_name": "ruvic_tenable_sc_connector"
+  },
+  "auth_modes": [
+    {
+      "id": "api_keys",
+      "label": "API Keys",
+      "fields": [
+        {
+          "key": "base_url",
+          "label": "URL de Tenable Security Center",
+          "type": "text",
+          "required": true,
+          "placeholder": "https://tenablesc.miempresa.com",
+          "help_text": "URL de la consola, sin /rest ni barra final"
+        },
+        {
+          "key": "access_key",
+          "label": "Access Key",
+          "type": "password",
+          "secret": true,
+          "required": true,
+          "help_text": "Usuario → My Profile → API Keys → Generate"
+        },
+        {
+          "key": "secret_key",
+          "label": "Secret Key",
+          "type": "password",
+          "secret": true,
+          "required": true,
+          "help_text": "Se muestra una sola vez al generar las API Keys"
+        },
+        {
+          "key": "verify_ssl",
+          "label": "Verificar certificado SSL",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "help_text": "Desactívalo solo si el equipo usa un certificado autofirmado en una red de confianza"
+        },
+        {
+          "key": "connect_timeout",
+          "label": "Timeout de conexión (segundos)",
+          "type": "number",
+          "required": false,
+          "default": "30"
+        }
+      ]
+    }
+  ],
+  "env_prefix": "RUVIC_TENABLE_SC_",
+  "operations": [
+    "vulns.list",
+    "assets.list",
+    "findings.list",
+    "scans.list",
+    "scans.launch"
+  ],
+  "test_connection": true,
+  "docs": {
+    "skill": "SKILL.md",
+    "permissions_note": "Requiere Tenable Security Center 5.13 o superior (API Keys habilitadas en System → Configuration → Security). Genera las llaves con un usuario de rol 'Security Analyst' (o uno personalizado) con acceso a los repositorios a consultar y permiso para lanzar escaneos. El conector no crea ni borra escaneos: solo lanza escaneos ya definidos."
+  }
+}

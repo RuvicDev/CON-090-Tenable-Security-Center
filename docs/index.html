@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="doc_title">Conector Tenable Security Center — Guía de configuración | Ruvic</title>
+  <link rel="stylesheet" href="assets/ruvic.css">
+</head>
+<body class="guide">
+<div class="guide-shell">
+<main class="ruvic-container">
+  <nav class="ruvic-toc" aria-label="Índice">
+    <h2 data-i18n="toc_title">Contenido</h2>
+    <ol>
+      <li><a href="#que-es" data-i18n="toc.que_es">¿Qué es y para qué sirve?</a></li>
+      <li><a href="#prerrequisitos" data-i18n="toc.prerrequisitos">Prerrequisitos</a></li>
+      <li><a href="#configuracion-fabricante" data-i18n="toc.configuracion_fabricante">Configuración en el fabricante</a></li>
+      <li><a href="#permisos" data-i18n="toc.permisos">Permisos requeridos</a></li>
+      <li><a href="#configuracion-ruvic" data-i18n="toc.configuracion_ruvic">Configuración en Ruvic</a></li>
+      <li><a href="#verificacion" data-i18n="toc.verificacion">Verificación</a></li>
+      <li><a href="#solucion-problemas" data-i18n="toc.solucion_problemas">Solución de problemas</a></li>
+      <li><a href="#faq-seguridad" data-i18n="toc.faq_seguridad">Preguntas frecuentes y notas de seguridad</a></li>
+    </ol>
+  </nav>
+
+  <h1 data-i18n="guide_title">Conector Tenable Security Center — Guía de configuración</h1>
+  <p class="guide-updated" data-i18n="guide_updated">Última actualización: octubre 2026</p>
+
+  <section id="que-es">
+    <h2 data-i18n="section.que_es">¿Qué es y para qué sirve?</h2>
+    <p data-i18n="que_es.body">El conector Tenable Security Center permite que el agente de Ruvic consulte las vulnerabilidades de tu red, los activos más expuestos y sus hallazgos, y lance escaneos ya definidos. Puedes pedirle cosas como:</p>
+    <ul>
+      <li data-i18n="que_es.example1">"¿Qué vulnerabilidades críticas con exploit público tenemos y en cuántos equipos?"</li>
+      <li data-i18n="que_es.example2">"¿Cuáles son los 10 servidores más expuestos de la red 10.0.0.0/24?"</li>
+      <li data-i18n="que_es.example3">"Lanza el escaneo semanal de la DMZ."</li>
+    </ul>
+    <p data-i18n="que_es.ops_intro">Operaciones soportadas:</p>
+    <table>
+      <thead><tr><th data-i18n="table.operacion">Operación</th><th data-i18n="table.que_hace">Qué hace</th></tr></thead>
+      <tbody>
+        <tr><td><code>vulns.list</code></td><td data-i18n="op.1">Vulnerabilidades agrupadas por plugin, con número de activos afectados</td></tr>
+        <tr><td><code>assets.list</code></td><td data-i18n="op.2">Activos con puntaje y conteo por severidad</td></tr>
+        <tr><td><code>findings.list</code></td><td data-i18n="op.3">Hallazgos por host, plugin o severidad</td></tr>
+        <tr><td><code>scans.list</code></td><td data-i18n="op.4">Escaneos definidos</td></tr>
+        <tr><td><code>scans.launch</code></td><td data-i18n="op.5">Lanza un escaneo ya definido (escribe)</td></tr>
+      </tbody>
+    </table>
+    <div class="callout callout-warning">
+      <span class="callout-title" data-i18n="callout.main.title">Lanzar un escaneo genera tráfico real</span>
+      <span data-i18n="callout.main.body">Las consultas son de solo lectura. Lanzar un escaneo ejecuta pruebas contra los equipos definidos en ese escaneo.</span>
+    </div>
+  </section>
+
+  <section id="prerrequisitos">
+    <h2 data-i18n="section.prerrequisitos">Prerrequisitos</h2>
+    <ul>
+      <li data-i18n="prereq.1">Tenable Security Center 5.13 o superior, con API Keys habilitadas.</li>
+      <li data-i18n="prereq.2">Un usuario dedicado con rol Security Analyst (o personalizado) y acceso a los repositorios necesarios.</li>
+      <li data-i18n="prereq.3">Conectividad HTTPS desde la plataforma Ruvic hasta la consola.</li>
+    </ul>
+  </section>
+
+  <section id="configuracion-fabricante">
+    <h2 data-i18n="section.configuracion_fabricante">Configuración en el fabricante</h2>
+    <p data-i18n="fabricante.intro">Vas a habilitar las API Keys y generarlas con un usuario dedicado.</p>
+    <ol class="ruvic-steps">
+      <li>
+        <strong data-i18n="step.1.label">Habilita las API Keys.</strong>
+        <p data-i18n="step.1.body">Como administrador, ve a <strong>System → Configuration → Security</strong> y activa <strong>Allow API Keys</strong>.</p>
+      </li>
+      <li>
+        <strong data-i18n="step.2.label">Crea el usuario dedicado.</strong>
+        <p data-i18n="step.2.body">En <strong>Users → Users → Add</strong>, crea "ruvic-api" con rol <strong>Security Analyst</strong> y los repositorios que deba consultar.</p>
+      </li>
+      <li>
+        <strong data-i18n="step.3.label">Genera las llaves.</strong>
+        <p data-i18n="step.3.body">Inicia sesión como ese usuario y ve a <strong>My Profile → API Keys → Generate API Key</strong>. Copia la Access Key y la Secret Key.</p>
+        <div class="screenshot-placeholder" data-i18n="img.step3.placeholder">[ Captura: generación de API Keys en My Profile — reemplazar por assets/img/tenablesc-keys.png ]</div>
+      </li>
+    </ol>
+  </section>
+
+  <section id="permisos">
+    <h2 data-i18n="section.permisos">Permisos requeridos</h2>
+    <p data-i18n="permisos.intro">Principio de mínimo privilegio: el usuario solo necesita lo siguiente.</p>
+    <table>
+      <thead><tr><th data-i18n="table.permiso">Permiso</th><th data-i18n="table.para_que">Para qué lo usa el conector</th></tr></thead>
+      <tbody>
+        <tr><td><code>Acceso a repositorios</code></td><td data-i18n="perm.1.desc">Consultar vulnerabilidades, activos y hallazgos</td></tr>
+        <tr><td><code>Lanzar escaneos</code></td><td data-i18n="perm.2.desc">Ejecutar escaneos ya definidos con launch_scan</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="configuracion-ruvic">
+    <h2 data-i18n="section.configuracion_ruvic">Configuración en Ruvic</h2>
+    <p data-i18n="ruvic.intro">Entra a <strong>Settings → Conectores</strong>, busca la tarjeta <strong>Tenable Security Center</strong> y pulsa <strong>Configurar</strong>. Diligencia el formulario con los valores de la sección anterior:</p>
+    <table>
+      <thead><tr><th data-i18n="table.campo">Campo del formulario</th><th data-i18n="table.valor">Valor</th></tr></thead>
+      <tbody>
+        <tr><td data-i18n="field.base_url">URL de Tenable Security Center</td><td data-i18n="field.base_url.desc">URL de la consola, ej. <code>https://tenablesc.miempresa.com</code></td></tr>
+        <tr><td data-i18n="field.access_key">Access Key</td><td data-i18n="field.access_key.desc">Access Key generada. Se guarda cifrada</td></tr>
+        <tr><td data-i18n="field.secret_key">Secret Key</td><td data-i18n="field.secret_key.desc">Secret Key generada. Se guarda cifrada</td></tr>
+        <tr><td data-i18n="field.verify_ssl">Verificar certificado SSL</td><td data-i18n="field.verify_ssl.desc">Actívalo siempre, salvo certificados autofirmados en redes de confianza</td></tr>
+        <tr><td data-i18n="field.connect_timeout">Timeout de conexión (segundos)</td><td data-i18n="field.connect_timeout.desc">Opcional; <code>30</code> segundos por defecto</td></tr>
+      </tbody>
+    </table>
+    <p data-i18n="ruvic.save">Guarda y pulsa <strong>Probar conexión</strong>: la plataforma valida las credenciales y el acceso.</p>
+    <div class="screenshot-placeholder" data-i18n="img.formulario.placeholder">[ Captura: formulario del conector Tenable Security Center en Settings → Conectores — reemplazar por assets/img/tenable_sc-form.png ]</div>
+  </section>
+
+  <section id="verificacion">
+    <h2 data-i18n="section.verificacion">Verificación</h2>
+    <ol class="ruvic-steps">
+      <li>
+        <strong data-i18n="verif.1.label">Test de conexión exitoso.</strong>
+        <p data-i18n="verif.1.body">El botón <em>Probar conexión</em> debe responder con éxito y la tarjeta debe quedar en estado <strong>Configurado</strong>.</p>
+      </li>
+      <li>
+        <strong data-i18n="verif.2.label">Prueba mínima con el agente.</strong>
+        <p data-i18n="verif.2.body">Abre una conversación nueva y pídele:</p>
+        <blockquote data-i18n="verif.2.prompt">"¿Cuántas vulnerabilidades críticas hay en Tenable y cuál afecta a más equipos?"</blockquote>
+        <p data-i18n="verif.2.result">El agente debe responder con datos reales de la consola. No le pidas lanzar escaneos durante la prueba.</p>
+      </li>
+    </ol>
+  </section>
+
+  <section id="solucion-problemas">
+    <h2 data-i18n="section.solucion_problemas">Solución de problemas</h2>
+    <table>
+      <thead><tr><th data-i18n="table.sintoma">Mensaje / síntoma</th><th data-i18n="table.causa">Causa probable y solución</th></tr></thead>
+      <tbody>
+        <tr><td data-i18n="trouble.1.symptom">"API Keys inválidas o sin permiso" (401/403)</td><td data-i18n="trouble.1.fix">Llaves mal copiadas, regeneradas, o API Keys deshabilitadas en Configuration → Security.</td></tr>
+        <tr><td data-i18n="trouble.2.symptom">Resultados vacíos</td><td data-i18n="trouble.2.fix">El usuario no tiene acceso al repositorio con esos datos. Revisa sus repositorios asignados.</td></tr>
+        <tr><td data-i18n="trouble.3.symptom">"ip_range inválido"</td><td data-i18n="trouble.3.fix">Usa una IP, un rango a-b o un CIDR (ej. 10.0.0.0/24).</td></tr>
+        <tr><td data-i18n="trouble.4.symptom">"Error de certificado SSL"</td><td data-i18n="trouble.4.fix">La consola usa un certificado autofirmado. Instala uno válido o desactiva la verificación en una red de confianza.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="faq-seguridad">
+    <h2 data-i18n="section.faq_seguridad">Preguntas frecuentes y notas de seguridad</h2>
+    <h3 data-i18n="faq.1.q">¿Sirve para Tenable en la nube?</h3>
+    <p data-i18n="faq.1.a">No. Para Tenable Vulnerability Management (cloud.tenable.com) usa el conector Tenable / Nessus (CON-051).</p>
+
+    <h3 data-i18n="faq.2.q">¿El agente puede crear o borrar escaneos?</h3>
+    <p data-i18n="faq.2.a">No. Solo lanza escaneos ya definidos por tu equipo.</p>
+
+    <h3 data-i18n="faq.3.q">¿Qué hago si las llaves se filtran?</h3>
+    <p data-i18n="faq.3.a">Genera llaves nuevas en My Profile (invalida las anteriores) y actualízalas en el formulario.</p>
+
+  </section>
+
+</main>
+</div>
+
+<script>
+  const I18N = {
+  "es": {
+    "doc_title": "Conector Tenable Security Center — Guía de configuración | Ruvic",
+    "toc_title": "Contenido",
+    "toc.que_es": "¿Qué es y para qué sirve?",
+    "toc.prerrequisitos": "Prerrequisitos",
+    "toc.configuracion_fabricante": "Configuración en el fabricante",
+    "toc.permisos": "Permisos requeridos",
+    "toc.configuracion_ruvic": "Configuración en Ruvic",
+    "toc.verificacion": "Verificación",
+    "toc.solucion_problemas": "Solución de problemas",
+    "toc.faq_seguridad": "Preguntas frecuentes y notas de seguridad",
+    "guide_title": "Conector Tenable Security Center — Guía de configuración",
+    "guide_updated": "Última actualización: octubre 2026",
+    "section.que_es": "¿Qué es y para qué sirve?",
+    "que_es.body": "El conector Tenable Security Center permite que el agente de Ruvic consulte las vulnerabilidades de tu red, los activos más expuestos y sus hallazgos, y lance escaneos ya definidos. Puedes pedirle cosas como:",
+    "que_es.example1": "\"¿Qué vulnerabilidades críticas con exploit público tenemos y en cuántos equipos?\"",
+    "que_es.example2": "\"¿Cuáles son los 10 servidores más expuestos de la red 10.0.0.0/24?\"",
+    "que_es.example3": "\"Lanza el escaneo semanal de la DMZ.\"",
+    "que_es.ops_intro": "Operaciones soportadas:",
+    "table.operacion": "Operación",
+    "table.que_hace": "Qué hace",
+    "op.1": "Vulnerabilidades agrupadas por plugin, con número de activos afectados",
+    "op.2": "Activos con puntaje y conteo por severidad",
+    "op.3": "Hallazgos por host, plugin o severidad",
+    "op.4": "Escaneos definidos",
+    "op.5": "Lanza un escaneo ya definido (escribe)",
+    "callout.main.title": "Lanzar un escaneo genera tráfico real",
+    "callout.main.body": "Las consultas son de solo lectura. Lanzar un escaneo ejecuta pruebas contra los equipos definidos en ese escaneo.",
+    "section.prerrequisitos": "Prerrequisitos",
+    "prereq.1": "Tenable Security Center 5.13 o superior, con API Keys habilitadas.",
+    "prereq.2": "Un usuario dedicado con rol Security Analyst (o personalizado) y acceso a los repositorios necesarios.",
+    "prereq.3": "Conectividad HTTPS desde la plataforma Ruvic hasta la consola.",
+    "section.configuracion_fabricante": "Configuración en el fabricante",
+    "fabricante.intro": "Vas a habilitar las API Keys y generarlas con un usuario dedicado.",
+    "step.1.label": "Habilita las API Keys.",
+    "step.1.body": "Como administrador, ve a <strong>System → Configuration → Security</strong> y activa <strong>Allow API Keys</strong>.",
+    "step.2.label": "Crea el usuario dedicado.",
+    "step.2.body": "En <strong>Users → Users → Add</strong>, crea \"ruvic-api\" con rol <strong>Security Analyst</strong> y los repositorios que deba consultar.",
+    "step.3.label": "Genera las llaves.",
+    "step.3.body": "Inicia sesión como ese usuario y ve a <strong>My Profile → API Keys → Generate API Key</strong>. Copia la Access Key y la Secret Key.",
+    "img.step3.placeholder": "[ Captura: generación de API Keys en My Profile — reemplazar por assets/img/tenablesc-keys.png ]",
+    "section.permisos": "Permisos requeridos",
+    "permisos.intro": "Principio de mínimo privilegio: el usuario solo necesita lo siguiente.",
+    "table.permiso": "Permiso",
+    "table.para_que": "Para qué lo usa el conector",
+    "perm.1.desc": "Consultar vulnerabilidades, activos y hallazgos",
+    "perm.2.desc": "Ejecutar escaneos ya definidos con launch_scan",
+    "section.configuracion_ruvic": "Configuración en Ruvic",
+    "ruvic.intro": "Entra a <strong>Settings → Conectores</strong>, busca la tarjeta <strong>Tenable Security Center</strong> y pulsa <strong>Configurar</strong>. Diligencia el formulario con los valores de la sección anterior:",
+    "table.campo": "Campo del formulario",
+    "table.valor": "Valor",
+    "field.base_url": "URL de Tenable Security Center",
+    "field.base_url.desc": "URL de la consola, ej. <code>https://tenablesc.miempresa.com</code>",
+    "field.access_key": "Access Key",
+    "field.access_key.desc": "Access Key generada. Se guarda cifrada",
+    "field.secret_key": "Secret Key",
+    "field.secret_key.desc": "Secret Key generada. Se guarda cifrada",
+    "field.verify_ssl": "Verificar certificado SSL",
+    "field.verify_ssl.desc": "Actívalo siempre, salvo certificados autofirmados en redes de confianza",
+    "field.connect_timeout": "Timeout de conexión (segundos)",
+    "field.connect_timeout.desc": "Opcional; <code>30</code> segundos por defecto",
+    "ruvic.save": "Guarda y pulsa <strong>Probar conexión</strong>: la plataforma valida las credenciales y el acceso.",
+    "img.formulario.placeholder": "[ Captura: formulario del conector Tenable Security Center en Settings → Conectores — reemplazar por assets/img/tenable_sc-form.png ]",
+    "section.verificacion": "Verificación",
+    "verif.1.label": "Test de conexión exitoso.",
+    "verif.1.body": "El botón <em>Probar conexión</em> debe responder con éxito y la tarjeta debe quedar en estado <strong>Configurado</strong>.",
+    "verif.2.label": "Prueba mínima con el agente.",
+    "verif.2.body": "Abre una conversación nueva y pídele:",
+    "verif.2.prompt": "\"¿Cuántas vulnerabilidades críticas hay en Tenable y cuál afecta a más equipos?\"",
+    "verif.2.result": "El agente debe responder con datos reales de la consola. No le pidas lanzar escaneos durante la prueba.",
+    "section.solucion_problemas": "Solución de problemas",
+    "table.sintoma": "Mensaje / síntoma",
+    "table.causa": "Causa probable y solución",
+    "trouble.1.symptom": "\"API Keys inválidas o sin permiso\" (401/403)",
+    "trouble.1.fix": "Llaves mal copiadas, regeneradas, o API Keys deshabilitadas en Configuration → Security.",
+    "trouble.2.symptom": "Resultados vacíos",
+    "trouble.2.fix": "El usuario no tiene acceso al repositorio con esos datos. Revisa sus repositorios asignados.",
+    "trouble.3.symptom": "\"ip_range inválido\"",
+    "trouble.3.fix": "Usa una IP, un rango a-b o un CIDR (ej. 10.0.0.0/24).",
+    "trouble.4.symptom": "\"Error de certificado SSL\"",
+    "trouble.4.fix": "La consola usa un certificado autofirmado. Instala uno válido o desactiva la verificación en una red de confianza.",
+    "section.faq_seguridad": "Preguntas frecuentes y notas de seguridad",
+    "faq.1.q": "¿Sirve para Tenable en la nube?",
+    "faq.1.a": "No. Para Tenable Vulnerability Management (cloud.tenable.com) usa el conector Tenable / Nessus (CON-051).",
+    "faq.2.q": "¿El agente puede crear o borrar escaneos?",
+    "faq.2.a": "No. Solo lanza escaneos ya definidos por tu equipo.",
+    "faq.3.q": "¿Qué hago si las llaves se filtran?",
+    "faq.3.a": "Genera llaves nuevas en My Profile (invalida las anteriores) y actualízalas en el formulario.",
+  },
+  "en": {
+    "doc_title": "Tenable Security Center Connector — Setup Guide | Ruvic",
+    "toc_title": "Contents",
+    "toc.que_es": "What is it and what is it for?",
+    "toc.prerrequisitos": "Prerequisites",
+    "toc.configuracion_fabricante": "Vendor-side setup",
+    "toc.permisos": "Required permissions",
+    "toc.configuracion_ruvic": "Setup in Ruvic",
+    "toc.verificacion": "Verification",
+    "toc.solucion_problemas": "Troubleshooting",
+    "toc.faq_seguridad": "FAQ and security notes",
+    "guide_title": "Tenable Security Center Connector — Setup Guide",
+    "guide_updated": "Last updated: October 2026",
+    "section.que_es": "What is it and what is it for?",
+    "que_es.body": "The Tenable Security Center connector lets the Ruvic agent query your network's vulnerabilities, the most exposed assets and their findings, and launch predefined scans. You can ask things like:",
+    "que_es.example1": "\"Which critical vulnerabilities with public exploits do we have and on how many hosts?\"",
+    "que_es.example2": "\"Which are the 10 most exposed servers in 10.0.0.0/24?\"",
+    "que_es.example3": "\"Launch the weekly DMZ scan.\"",
+    "que_es.ops_intro": "Supported operations:",
+    "table.operacion": "Operation",
+    "table.que_hace": "What it does",
+    "op.1": "Vulnerabilities grouped by plugin, with affected asset count",
+    "op.2": "Assets with score and count by severity",
+    "op.3": "Findings by host, plugin or severity",
+    "op.4": "Defined scans",
+    "op.5": "Launches a predefined scan (writes)",
+    "callout.main.title": "Launching a scan generates real traffic",
+    "callout.main.body": "Queries are read-only. Launching a scan runs tests against the hosts defined in that scan.",
+    "section.prerrequisitos": "Prerequisites",
+    "prereq.1": "Tenable Security Center 5.13 or later, with API Keys enabled.",
+    "prereq.2": "A dedicated user with Security Analyst role (or custom) and access to the required repositories.",
+    "prereq.3": "HTTPS connectivity from the Ruvic platform to the console.",
+    "section.configuracion_fabricante": "Vendor-side setup",
+    "fabricante.intro": "You will enable API Keys and generate them with a dedicated user.",
+    "step.1.label": "Enable API Keys.",
+    "step.1.body": "As an administrator, go to <strong>System → Configuration → Security</strong> and turn on <strong>Allow API Keys</strong>.",
+    "step.2.label": "Create the dedicated user.",
+    "step.2.body": "In <strong>Users → Users → Add</strong>, create \"ruvic-api\" with the <strong>Security Analyst</strong> role and the repositories it should query.",
+    "step.3.label": "Generate the keys.",
+    "step.3.body": "Log in as that user and go to <strong>My Profile → API Keys → Generate API Key</strong>. Copy the Access Key and the Secret Key.",
+    "img.step3.placeholder": "[ Screenshot: API Key generation in My Profile — replace with assets/img/tenablesc-keys.png ]",
+    "section.permisos": "Required permissions",
+    "permisos.intro": "Least privilege: the user only needs the following.",
+    "table.permiso": "Permission",
+    "table.para_que": "What the connector uses it for",
+    "perm.1.desc": "Query vulnerabilities, assets and findings",
+    "perm.2.desc": "Run predefined scans with launch_scan",
+    "section.configuracion_ruvic": "Setup in Ruvic",
+    "ruvic.intro": "Go to <strong>Settings → Connectors</strong>, find the <strong>Tenable Security Center</strong> card and click <strong>Configure</strong>. Fill in the form with the values from the previous section:",
+    "table.campo": "Form field",
+    "table.valor": "Value",
+    "field.base_url": "Tenable Security Center URL",
+    "field.base_url.desc": "Console URL, e.g. <code>https://tenablesc.miempresa.com</code>",
+    "field.access_key": "Access Key",
+    "field.access_key.desc": "Generated Access Key. Stored encrypted",
+    "field.secret_key": "Secret Key",
+    "field.secret_key.desc": "Generated Secret Key. Stored encrypted",
+    "field.verify_ssl": "Verify SSL certificate",
+    "field.verify_ssl.desc": "Always on, except self-signed certificates on trusted networks",
+    "field.connect_timeout": "Connection timeout (seconds)",
+    "field.connect_timeout.desc": "Optional; <code>30</code> seconds by default",
+    "ruvic.save": "Save and click <strong>Test connection</strong>: the platform validates the credentials and access.",
+    "img.formulario.placeholder": "[ Screenshot: Tenable Security Center connector form in Settings → Connectors — replace with assets/img/tenable_sc-form.png ]",
+    "section.verificacion": "Verification",
+    "verif.1.label": "Successful connection test.",
+    "verif.1.body": "The <em>Test connection</em> button must succeed and the card must show <strong>Configured</strong>.",
+    "verif.2.label": "Minimal test with the agent.",
+    "verif.2.body": "Open a new conversation and ask:",
+    "verif.2.prompt": "\"How many critical vulnerabilities are in Tenable and which affects the most hosts?\"",
+    "verif.2.result": "The agent should answer with real console data. Don't ask it to launch scans during the test.",
+    "section.solucion_problemas": "Troubleshooting",
+    "table.sintoma": "Message / symptom",
+    "table.causa": "Likely cause and fix",
+    "trouble.1.symptom": "\"Invalid API Keys or no permission\" (401/403)",
+    "trouble.1.fix": "Keys mistyped, regenerated, or API Keys disabled in Configuration → Security.",
+    "trouble.2.symptom": "Empty results",
+    "trouble.2.fix": "The user lacks access to the repository holding that data. Check its assigned repositories.",
+    "trouble.3.symptom": "\"invalid ip_range\"",
+    "trouble.3.fix": "Use an IP, an a-b range or a CIDR (e.g. 10.0.0.0/24).",
+    "trouble.4.symptom": "\"SSL certificate error\"",
+    "trouble.4.fix": "The console uses a self-signed certificate. Install a valid one or disable verification on a trusted network.",
+    "section.faq_seguridad": "FAQ and security notes",
+    "faq.1.q": "Does it work with Tenable cloud?",
+    "faq.1.a": "No. For Tenable Vulnerability Management (cloud.tenable.com) use the Tenable / Nessus connector (CON-051).",
+    "faq.2.q": "Can the agent create or delete scans?",
+    "faq.2.a": "No. It only launches scans already defined by your team.",
+    "faq.3.q": "What if the keys leak?",
+    "faq.3.a": "Generate new keys in My Profile (invalidates the old ones) and update the form.",
+  },
+  };
+  /* El portal aplica el idioma del usuario (localStorage ruvic-docs-lang)
+     y actualiza [data-i18n], [data-i18n-placeholder] y [data-i18n-alt]. */
+</script>
+</body>
+</html>
